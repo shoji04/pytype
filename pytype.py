@@ -3,11 +3,11 @@ import random
 
 pygame.init()
 
-palavras_teste = [
-    "cachorro",
-    "gato",
-    "macaco",
-]
+lista_facil = ["variavel", "lista", "funçao", "if", "else", "while", "loop", "string", "input", "output"]
+
+#lista_medio = ["recursao", "dicionario", "classe", "metodo", "biblioteca", "exceção", "iterador", "indexaçao", "argumento", "condicional"]
+
+#lista_dificil = ["polimorfismo", "herança", "encapsulamento", "compreensão", "modulo", "programaçao", "algoritmo", "arquivos", "exceçoes"]
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -16,11 +16,28 @@ BLACK = (0, 0, 0)
 WIDTH = 480
 HEIGHT = 600
 window = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('Navinha')
+pygame.display.set_caption('PyType')
+
+tela_inicial_img = pygame.image.load('assets/tela_inicial.png').convert()
+tela_inicial_img = pygame.transform.scale(tela_inicial_img, (WIDTH, HEIGHT))
+
+game_running = False
+
+# Loop principal
+clock = pygame.time.Clock()
+FPS = 30
+
+while not game_running:
+    window.blit(tela_inicial_img, (0, 0))  # Desenha a tela inicial
+    pygame.display.update()
+
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            game_running = True
 
 # Carregando imagem da nave
-SHIP_WIDTH = 50
-SHIP_HEIGHT = 38
+SHIP_WIDTH = 400
+SHIP_HEIGHT = 400
 ship_img = pygame.image.load('assets/nave.png').convert_alpha()
 ship_img = pygame.transform.scale(ship_img, (SHIP_WIDTH, SHIP_HEIGHT))
 
@@ -66,7 +83,7 @@ all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
 
 palavras_sprites = pygame.sprite.Group()
-for palavra in palavras_teste:
+for palavra in lista_facil:
     p = Palavra(palavra)
     all_sprites.add(p)
     palavras_sprites.add(p)
@@ -87,7 +104,7 @@ while game:
     all_sprites.update()
 
     # Desenhando na tela
-    background = pygame.image.load('assets/background.png').convert()
+    background = pygame.image.load('assets/back.png').convert()
     window.fill((0, 0, 0))
     window.blit(background, (0, 0))
     all_sprites.draw(window)
