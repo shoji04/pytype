@@ -1,16 +1,19 @@
 import pygame
 import random
+import sys
 
 pygame.init()
 
 lista_facil = ["variavel", "lista", "funçao", "if", "else", "while", "loop", "string", "input", "output"]
 
-#lista_medio = ["recursao", "dicionario", "classe", "metodo", "biblioteca", "exceção", "iterador", "indexaçao", "argumento", "condicional"]
+lista_medio = ["recursao", "dicionario", "classe", "metodo", "biblioteca", "exceção", "iterador", "indexaçao", "argumento", "condicional"]
 
-#lista_dificil = ["polimorfismo", "herança", "encapsulamento", "compreensão", "modulo", "programaçao", "algoritmo", "arquivos", "exceçoes"]
+lista_dificil = ["polimorfismo", "herança", "encapsulamento", "compreensão", "modulo", "programaçao", "algoritmo", "arquivos", "exceçoes"]
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+
+pontuacao = 0
 
 # Configurações da tela
 WIDTH = 480
@@ -20,6 +23,9 @@ pygame.display.set_caption('PyType')
 
 tela_inicial_img = pygame.image.load('assets/tela_inicial.png').convert()
 tela_inicial_img = pygame.transform.scale(tela_inicial_img, (WIDTH, HEIGHT))
+
+gameover_img = pygame.image.load('assets/gameover.png').convert()
+gameover_img = pygame.transform.scale(gameover_img, (300, 80))
 
 game_running = False
 
@@ -36,8 +42,8 @@ while not game_running:
             game_running = True
 
 # Carregando imagem da nave
-SHIP_WIDTH = 400
-SHIP_HEIGHT = 400
+SHIP_WIDTH = 60
+SHIP_HEIGHT = 60
 ship_img = pygame.image.load('assets/nave.png').convert_alpha()
 ship_img = pygame.transform.scale(ship_img, (SHIP_WIDTH, SHIP_HEIGHT))
 
@@ -103,11 +109,27 @@ while game:
     # Atualizando a nave
     all_sprites.update()
 
+    for palavra_sprite in palavras_sprites:
+        if palavra_sprite.rect.bottom >= HEIGHT:
+            window.blit(gameover_img, (WIDTH // 2 - 150, HEIGHT // 2 - 40))
+            pygame.display.update()
+            pygame.time.delay(2000)  # Aguarda 2 segundos antes de sair do jogo
+            pygame.quit()
+            sys.exit()
+
     # Desenhando na tela
     background = pygame.image.load('assets/back.png').convert()
     window.fill((0, 0, 0))
     window.blit(background, (0, 0))
     all_sprites.draw(window)
+    
+    def render_text(text, font, color, x, y):
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.topleft = (x, y)
+        window.blit(text_surface, text_rect)
+    
+    render_text("Pontuação: {}".format(pontuacao), pygame.font.Font(None, 40), WHITE, 20, 20)
 
     pygame.display.update()
 

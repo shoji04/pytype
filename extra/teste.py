@@ -1,12 +1,19 @@
 import pygame
 import random
+import sys
 
 pygame.init()
 
 lista_facil = ["variavel", "lista", "funçao", "if", "else", "while", "loop", "string", "input", "output"]
 
+lista_medio = ["recursao", "dicionario", "classe", "metodo", "biblioteca", "exceção", "iterador", "indexaçao", "argumento", "condicional"]
+
+lista_dificil = ["polimorfismo", "herança", "encapsulamento", "compreensão", "modulo", "programaçao", "algoritmo", "arquivos", "exceçoes"]
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+
+pontuacao = 0
 
 # Configurações da tela
 WIDTH = 480
@@ -17,13 +24,34 @@ pygame.display.set_caption('PyType')
 tela_inicial_img = pygame.image.load('assets/tela_inicial.png').convert()
 tela_inicial_img = pygame.transform.scale(tela_inicial_img, (WIDTH, HEIGHT))
 
+gameover_img = pygame.image.load('assets/gameover.png').convert()
+gameover_img = pygame.transform.scale(gameover_img, (300, 80))
+
 game_running = False
 
+# Loop principal
+clock = pygame.time.Clock()
+FPS = 30
+
+while not game_running:
+    window.blit(tela_inicial_img, (0, 0))  # Desenha a tela inicial
+    pygame.display.update()
+
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            game_running = True
+
 # Carregando imagem da nave
-SHIP_WIDTH = 400
-SHIP_HEIGHT = 400
+SHIP_WIDTH = 60
+SHIP_HEIGHT = 60
 ship_img = pygame.image.load('assets/nave.png').convert_alpha()
 ship_img = pygame.transform.scale(ship_img, (SHIP_WIDTH, SHIP_HEIGHT))
+
+# Carregando imagem do tiro
+SHOT_WIDTH = 16
+SHOT_HEIGHT = 50
+shot_img = pygame.image.load('assets/tiro.png').convert_alpha()
+shot_img = pygame.transform.scale(shot_img, (SHOT_WIDTH, SHOT_HEIGHT))
 
 # Definindo a classe da nave
 class Ship(pygame.sprite.Sprite):
@@ -61,6 +89,18 @@ class Palavra(pygame.sprite.Sprite):
             self.rect.y = random.randint(-100, -50)
             self.speedy = random.randint(1, 3)
 
+# Definindo a classe do tiro
+class Shot(pygame.sprite.Sprite):
+    def __init__(self, img, ship_rect):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img
+        self.rect = self.image.get_rect()
+        self.rect.centerx = ship_rect.centerx
+        self.rect.bottom = ship_rect.top
+
+    def update(self):
+        self.rect.y -= 8  # Velocidade do tiro
+
 # Criando a nave
 player = Ship(ship_img)
 all_sprites = pygame.sprite.Group()
@@ -72,14 +112,12 @@ for palavra in lista_facil:
     all_sprites.add(p)
     palavras_sprites.add(p)
 
+shots = pygame.sprite.Group()  # Grupo para os tiros
+
 # Loop principal
 game = True
 clock = pygame.time.Clock()
 FPS = 30
-
-# Variáveis de jogo
-pontuacao = 0
-vidas = 3
 
 while game:
     clock.tick(FPS)
@@ -87,37 +125,37 @@ while game:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:  # Dispara o tiro quando a tecla de espaço é pressionada
+                shot = Shot(shot_img, player.rect)
+                all_sprites.add(shot)
+                shots.add(shot)
 
-    # Detecção de entrada do jogador
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        player.speedx = -5
-    elif keys[pygame.K_RIGHT]:
-        player.speedx = 5
-    else:
-        player.speedx = 0
-
-    # Atualizando a nave e as palavras
+    # Atualizando a nave e os tiros
     all_sprites.update()
+    shots.update()
 
-    # Verificando colisões entre a nave e as palavras
-    colisoes = pygame.sprite.spritecollide(player, palavras_sprites, True)
-    for colisao in colisoes:
-        pontuacao += 100 # Cada palavra destruída concede 100 pontos
-        palavra = Palavra(random.choice(lista_facil))
-        all_sprites.add(palavra)
-        palavras_sprites.add(palavra)
+    for palavra_sprite in palavras_sprites:
+        if palavra_sprite.rect.bottom >= HEIGHT:
+            window.blit(gameover_img, (WIDTH // 2 - 150, HEIGHT // 2 - 40))
+            pygame.display.update()
+            pygame.time.delay(2000)  # Aguarda 2 segundos antes de sair do jogo
+            pygame.quit()
+            sys.exit()
 
     # Desenhando na tela
+    background = pygame.image.load('assets/back.png').convert()
     window.fill((0, 0, 0))
+    window.blit(background, (0, 0))
     all_sprites.draw(window)
-
-    # Exibindo pontuação e vidas
-    font = pygame.font.Font(None, 36)
-    texto_pontuacao = font.render(f'Pontuação: {pontuacao}', True, WHITE)
-    texto_vidas = font.render(f'Vidas: {vidas}', True, WHITE)
-    window.blit(texto_pontuacao, (10, 10))
-    window.blit(texto_vidas, (WIDTH - texto_vidas.get_width() - 10, 10))
+    
+    def render_text(text, font, color, x, y):
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.topleft = (x, y)
+        window.blit(text_surface, text_rect)
+    
+    render_text("Pontuação: {}".format(pontuacao), pygame.font.Font(None, 40), WHITE, 20, 20)
 
     pygame.display.update()
 
