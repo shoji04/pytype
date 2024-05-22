@@ -20,9 +20,9 @@ YELLOW = (255, 255, 0)
 ship_img = pygame.image.load('assets/nave.png').convert_alpha()
 ship_img = pygame.transform.scale(ship_img, (80, 80))
 special_ship_imgs = [
-    pygame.image.load('assets/idle/nave_exp1.png').convert_alpha(),
-    pygame.image.load('assets/idle/nave_exp2.png').convert_alpha(),
-    pygame.image.load('assets/idle/nave_exp3.png').convert_alpha()
+    pygame.image.load('assets/idle/nave_exp1t.png').convert_alpha(),
+    pygame.image.load('assets/idle/nave_exp2t.png').convert_alpha(),
+    pygame.image.load('assets/idle/nave_exp3t.png').convert_alpha()
 ]
 special_ship_imgs = [pygame.transform.scale(img, (80, 80)) for img in special_ship_imgs]  # Garantir o redimensionamento correto das imagens especiais
 shot_img = pygame.image.load('assets/tiro.png').convert_alpha()
@@ -46,7 +46,7 @@ pygame.mixer.music.play(-1)
 
 # Lista de palavras
 lista_facil = [
-    "variavel", "lista", "funcao", "if", "else", "while", "loop",
+    "variavel", "lista", "funçao", "if", "else", "while", "loop",
     "string", "input", "output", "jogo", "jogador", "nivel",
     "pontos", "tempo", "tela", "cenario", "menu", "botao",
     "score", "vida", "fase", "restart", "move", "elif", "for", "terminal"
@@ -66,10 +66,10 @@ lista_dificil = [
 
 # Pontuação
 pontuacao = 0
-word_speed = 1  # Inicializa a velocidade da palavra
+word_speed = 2  # Inicializa a velocidade da palavra
 
 poder_especial_ativo = False
-tempo_poder_especial = 10  # Duração do poder especial em segundos
+tempo_poder_especial = 2  # Duração do poder especial em segundos
 tempo_inicio_poder_especial = 0
 
 class Ship(pygame.sprite.Sprite):
@@ -115,7 +115,7 @@ class Palavra(pygame.sprite.Sprite):
         global word_speed, poder_especial_ativo
         
         if poder_especial_ativo:
-            self.rect.y += self.speedy * 0.5  # Reduz a velocidade pela metade durante o poder especial
+            self.rect.y += self.speedy * 0  # Deixa as palavras paradas
         else:
             self.rect.y += self.speedy
         
@@ -163,7 +163,7 @@ def create_sprites():
     shots = pygame.sprite.Group()
 
     pontuacao = 0
-    word_speed = 1  # Reinicia a velocidade da palavra
+    word_speed = 2  # Reinicia a velocidade da palavra
 
 def render_text(text, font_size, color, x, y, font_path=None):
     font = pygame.font.Font(font_path, font_size) if font_path else pygame.font.Font(None, font_size)
@@ -200,7 +200,7 @@ def show_game_over_screen():
 
 def aplicar_poder_especial():
     global poder_especial_ativo, tempo_inicio_poder_especial
-    if pontuacao >= 1000 and (pontuacao // 1000) * 1000 == pontuacao:
+    if pontuacao >= 500 and (pontuacao // 500) * 500 == pontuacao:
         poder_especial_ativo = True
         tempo_inicio_poder_especial = time.time()
 
@@ -244,11 +244,11 @@ while game:
 
             num_palavras = 3
             if pontuacao >= 3000:
-                num_palavras = 5
+                num_palavras = 6
             elif pontuacao >= 2000:
-                num_palavras = 4
+                num_palavras = 5
             elif pontuacao >= 1000:
-                num_palavras = 3
+                num_palavras = 4
 
             while len(palavras_sprites) < num_palavras:
                 nova_palavra = random.choice(lista_palavras)
