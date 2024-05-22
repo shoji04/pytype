@@ -41,7 +41,7 @@ score_font_path = 'assets/fontes/Minecraft.ttf'
 
 # Carregando e reproduzindo a música de fundo
 pygame.mixer.init()
-pygame.mixer.music.load('assets/musica/musica.mp3')
+pygame.mixer.music.load('assets/musica/musicaboa.mp3')
 pygame.mixer.music.play(-1)
 
 # Lista de palavras
@@ -66,7 +66,7 @@ lista_dificil = [
 
 # Pontuação
 pontuacao = 0
-word_speed = 2  # Inicializa a velocidade da palavra
+word_speed = 1.5  # Inicializa a velocidade da palavra
 
 poder_especial_ativo = False
 tempo_poder_especial = 2  # Duração do poder especial em segundos
@@ -163,7 +163,7 @@ def create_sprites():
     shots = pygame.sprite.Group()
 
     pontuacao = 0
-    word_speed = 2  # Reinicia a velocidade da palavra
+    word_speed = 1.5  # Reinicia a velocidade da palavra
 
 def render_text(text, font_size, color, x, y, font_path=None):
     font = pygame.font.Font(font_path, font_size) if font_path else pygame.font.Font(None, font_size)
