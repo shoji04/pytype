@@ -1,6 +1,7 @@
 import pygame
 import random
 import sys
+import time
 
 # Inicializar o Pygame
 pygame.init()
@@ -18,6 +19,12 @@ YELLOW = (255, 255, 0)
 # Carregando imagens
 ship_img = pygame.image.load('assets/nave.png').convert_alpha()
 ship_img = pygame.transform.scale(ship_img, (80, 80))
+special_ship_imgs = [
+    pygame.image.load('assets/idle/nave_exp1.png').convert_alpha(),
+    pygame.image.load('assets/idle/nave_exp2.png').convert_alpha(),
+    pygame.image.load('assets/idle/nave_exp3.png').convert_alpha()
+]
+special_ship_imgs = [pygame.transform.scale(img, (80, 80)) for img in special_ship_imgs]  # Garantir o redimensionamento correto das imagens especiais
 shot_img = pygame.image.load('assets/tiro.png').convert_alpha()
 shot_img = pygame.transform.scale(shot_img, (50, 50))
 gameover_img = pygame.image.load('assets/gameover.png').convert_alpha()
@@ -42,13 +49,13 @@ lista_facil = [
     "variavel", "lista", "funcao", "if", "else", "while", "loop",
     "string", "input", "output", "jogo", "jogador", "nivel",
     "pontos", "tempo", "tela", "cenario", "menu", "botao",
-    "score", "vida", "fase", "restart", "move"
+    "score", "vida", "fase", "restart", "move", "elif", "for", "terminal"
 ]
 
 lista_medio = [
     "recursao", "dicionario", "classe", "metodo", "biblioteca",
     "excecao", "iterador", "indexacao", "argumento", "condicional",
-    "evento", "sprite", "colisao", "inimigo", "pontuacao"
+    "evento", "sprite", "colisao", "inimigo", "pontuacao", "import", "debug", "problemas", "documento"
 ]
 
 lista_dificil = [
@@ -61,13 +68,36 @@ lista_dificil = [
 pontuacao = 0
 word_speed = 1  # Inicializa a velocidade da palavra
 
+poder_especial_ativo = False
+tempo_poder_especial = 10  # Duração do poder especial em segundos
+tempo_inicio_poder_especial = 0
+
 class Ship(pygame.sprite.Sprite):
-    def __init__(self, img):
+    def __init__(self, img, special_imgs):
         super().__init__()
-        self.image = img
+        self.original_image = pygame.transform.scale(img, (80, 80))
+        self.special_images = [pygame.transform.scale(img, (80, 80)) for img in special_imgs]
+        self.image = self.original_image
         self.rect = self.image.get_rect()
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
+        self.animation_index = 0
+        self.animation_timer = 0
+        self.animation_speed = 0.2  # Controla a velocidade da animação
+
+    def update(self):
+        global poder_especial_ativo
+
+        if poder_especial_ativo:
+            self.animation_timer += self.animation_speed
+            if self.animation_timer >= 1:
+                self.animation_index = (self.animation_index + 1) % len(self.special_images)
+                self.image = self.special_images[self.animation_index]
+                self.animation_timer = 0
+        else:
+            self.image = self.original_image
+        # Manter o centro da nave durante a animação
+        self.rect = self.image.get_rect(center=self.rect.center)
 
 class Palavra(pygame.sprite.Sprite):
     def __init__(self, palavra, speed):
@@ -82,7 +112,13 @@ class Palavra(pygame.sprite.Sprite):
         self.highlighted = False
 
     def update(self):
-        self.rect.y += self.speedy
+        global word_speed, poder_especial_ativo
+        
+        if poder_especial_ativo:
+            self.rect.y += self.speedy * 0.5  # Reduz a velocidade pela metade durante o poder especial
+        else:
+            self.rect.y += self.speedy
+        
         if self.rect.top > HEIGHT:
             self.kill()
 
@@ -111,7 +147,7 @@ class Shot(pygame.sprite.Sprite):
 
 def create_sprites():
     global all_sprites, player, palavras_sprites, shots, pontuacao, word_speed
-    player = Ship(ship_img)
+    player = Ship(ship_img, special_ship_imgs)
     all_sprites = pygame.sprite.Group()
     all_sprites.add(player)
 
@@ -161,6 +197,12 @@ def show_game_over_screen():
             if event.type == pygame.KEYUP:
                 waiting = False
     show_start_screen()
+
+def aplicar_poder_especial():
+    global poder_especial_ativo, tempo_inicio_poder_especial
+    if pontuacao >= 1000 and (pontuacao // 1000) * 1000 == pontuacao:
+        poder_especial_ativo = True
+        tempo_inicio_poder_especial = time.time()
 
 show_start_screen()
 
@@ -214,8 +256,7 @@ while game:
                 all_sprites.add(p)
                 palavras_sprites.add(p)
 
-            if pontuacao % 1000 == 0:
-                word_speed += 1
+            aplicar_poder_especial()
 
             shot = Shot(shot_img, player.rect, palavra_sprite)
             all_sprites.add(shot)
@@ -229,6 +270,13 @@ while game:
             create_sprites()
             input_text = ''
             break
+
+    # Reverte as mudanças após o tempo do poder especial
+    if poder_especial_ativo and time.time() - tempo_inicio_poder_especial >= tempo_poder_especial:
+        poder_especial_ativo = False
+        for palavra in palavras_sprites:
+            palavra.speedy = word_speed
+        print("Poder especial finalizado. Velocidade das palavras restaurada.")
 
     window.blit(background, (0, 0))
     all_sprites.draw(window)
