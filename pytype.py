@@ -1,3 +1,4 @@
+# Importando bibliotecas
 import pygame
 import random
 import sys
@@ -16,7 +17,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
 
-# Carregando imagens
+# Carregando as imagens
 ship_img = pygame.image.load('assets/nave.png').convert_alpha()
 ship_img = pygame.transform.scale(ship_img, (80, 80))
 special_ship_imgs = [
@@ -72,6 +73,7 @@ poder_especial_ativo = False
 tempo_poder_especial = 2  # Duração do poder especial em segundos
 tempo_inicio_poder_especial = 0
 
+# Define configurações da nave
 class Ship(pygame.sprite.Sprite):
     def __init__(self, img, special_imgs):
         super().__init__()
@@ -99,6 +101,7 @@ class Ship(pygame.sprite.Sprite):
         # Manter o centro da nave durante a animação
         self.rect = self.image.get_rect(center=self.rect.center)
 
+# Define as palavras que caem 
 class Palavra(pygame.sprite.Sprite):
     def __init__(self, palavra, speed):
         super().__init__()
@@ -127,6 +130,7 @@ class Palavra(pygame.sprite.Sprite):
         self.image = self.font.render(self.palavra, True, color)
         screen.blit(self.image, self.rect.topleft)
 
+# Define os tiros
 class Shot(pygame.sprite.Sprite):
     def __init__(self, img, ship_rect, target):
         super().__init__()
@@ -145,6 +149,7 @@ class Shot(pygame.sprite.Sprite):
             self.kill()
             self.target.kill()
 
+# Define os sprites criados pro jogo funcionar
 def create_sprites():
     global all_sprites, player, palavras_sprites, shots, pontuacao, word_speed
     player = Ship(ship_img, special_ship_imgs)
@@ -165,6 +170,7 @@ def create_sprites():
     pontuacao = 0
     word_speed = 1.5  # Reinicia a velocidade da palavra
 
+# Define os textos que aparecem
 def render_text(text, font_size, color, x, y, font_path=None):
     font = pygame.font.Font(font_path, font_size) if font_path else pygame.font.Font(None, font_size)
     text_surface = font.render(text, True, color)
@@ -172,6 +178,7 @@ def render_text(text, font_size, color, x, y, font_path=None):
     text_rect.topleft = (x, y)
     window.blit(text_surface, text_rect)
 
+#Define o começo e o final do jogo, e suas ações
 def show_start_screen():
     window.blit(tela_inicial_img, (0, 0))
     pygame.display.update()
@@ -198,6 +205,7 @@ def show_game_over_screen():
                 waiting = False
     show_start_screen()
 
+# Aplica o poder especial
 def aplicar_poder_especial():
     global poder_especial_ativo, tempo_inicio_poder_especial
     if pontuacao >= 500 and (pontuacao // 500) * 500 == pontuacao:
@@ -213,6 +221,7 @@ input_text = ''
 
 create_sprites()
 
+# Define o Loop geral do jogo
 while game:
     clock.tick(FPS)
 
@@ -233,7 +242,7 @@ while game:
     for palavra_sprite in palavras_sprites:
         if input_text == palavra_sprite.palavra:
             input_text = ''
-            pontuacao += 100
+            pontuacao += 100 # Acrescenta a pontuaçao, 100 por palavra
 
             if pontuacao >= 3500:
                 lista_palavras = lista_facil + lista_medio + lista_dificil
@@ -241,7 +250,7 @@ while game:
                 lista_palavras = lista_facil + lista_medio
             else:
                 lista_palavras = lista_facil
-
+            # Vai progredindo a dificuldade do jogo, palavras diferentes e quantidades
             num_palavras = 3
             if pontuacao >= 3000:
                 num_palavras = 6
@@ -253,6 +262,9 @@ while game:
             while len(palavras_sprites) < num_palavras:
                 nova_palavra = random.choice(lista_palavras)
                 p = Palavra(nova_palavra, word_speed)
+                while pygame.sprite.spritecollide(p, palavras_sprites, False): # Para as palavras nao ficarem uma na frente da outra
+                    p.rect.x = random.randint(0, WIDTH - p.rect.width)
+                    p.rect.y = random.randint(-100, -50)
                 all_sprites.add(p)
                 palavras_sprites.add(p)
 
@@ -281,6 +293,7 @@ while game:
     window.blit(background, (0, 0))
     all_sprites.draw(window)
 
+    # Exibe pontuação e texto
     render_text(f'{pontuacao}', 40, YELLOW, 20, 20, score_font_path)
     render_text(input_text, 60, YELLOW, WIDTH // 30, HEIGHT - 50)
 
